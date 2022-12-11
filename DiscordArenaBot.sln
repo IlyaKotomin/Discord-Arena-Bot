@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32922.545
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordArenaBot", "DiscordArenaBot\DiscordArenaBot.csproj", "{49C2214E-7293-4B2B-982A-637746B78A8F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{49C2214E-7293-4B2B-982A-637746B78A8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49C2214E-7293-4B2B-982A-637746B78A8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49C2214E-7293-4B2B-982A-637746B78A8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49C2214E-7293-4B2B-982A-637746B78A8F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0C00A619-9B3A-4D9C-BDB3-838993E03226}
+	EndGlobalSection
+EndGlobal
