@@ -19,8 +19,6 @@ namespace DiscordArenaBot.Arena.Models
         public int Wins { get; set; }
 
         public int Elo { get; set; }
-        
-        public List<Match>? Matches { get; set; }
 
         public int Loses => TotalGames - Wins;
     }

@@ -30,6 +30,10 @@ namespace DiscordArenaBot
         }
         private static void ConfirurateServices(IServiceCollection services)
         {
+            var @string = Config["ConnectionString"];
+
+            services.AddDbContext<BotDbContext>(options => options.UseSqlServer(Config["ConnectionString"]));
+
             services.AddSingleton(Config);
 
             services.AddSingleton(x => new DiscordSocketClient(new DiscordSocketConfig
@@ -43,8 +47,6 @@ namespace DiscordArenaBot
             services.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()));
 
             services.AddScoped<IPlayerService, PlayerService>();
-
-            services.AddDbContext<BotDbContext>(options => options.UseSqlServer(Config["ConnectionString"]));
         }
 
         private static async Task RunAppAsync(IHost host)
