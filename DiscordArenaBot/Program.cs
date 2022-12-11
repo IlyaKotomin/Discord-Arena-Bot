@@ -17,11 +17,11 @@ namespace DiscordArenaBot
                                                             .AddJsonFile("appsettings.json")
                                                             .Build();
 
-        public static string Token;
+        public static string? Token;
 
         public static async Task Main(string[] args)
         {
-            Token = Console.ReadLine();
+            Token = Console.ReadLine()!;
 
              using IHost host = Host.CreateDefaultBuilder().ConfigureServices(
                  (context, services) => ConfirurateServices(services)).Build();
