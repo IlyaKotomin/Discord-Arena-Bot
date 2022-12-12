@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <Folder Include="Bot\" />
+    <Folder Include="Core\" />
   </ItemGroup>
 
   <ItemGroup>
