@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DiscordArenaBot.Data.Services
 {
-    internal class PlayerService : IPlayerService
+    public class PlayerService : IPlayerService
     {
         private readonly BotDbContext _context;
 

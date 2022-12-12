@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
+using DiscordArenaBot.Data.Services.BotHandlers;
 
 namespace DiscordArenaBot.Core
 {
@@ -29,6 +30,7 @@ namespace DiscordArenaBot.Core
 
             await StartBot(host);
         }
+
         private static async Task StartBot(IHost host)
         {
             using IServiceScope serviceScope = host.Services.CreateScope();
@@ -37,28 +39,34 @@ namespace DiscordArenaBot.Core
             var commands = provider.GetRequiredService<InteractionService>();
 
 
+            await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
+
+
             var client = provider.GetRequiredService<DiscordSocketClient>();
+            
+            client.Log += DiscordClientOnLog;
+
 
             client.Ready += async () =>
             {
                 await commands.RegisterCommandsGloballyAsync(true);
             };
 
-            client.Log += DiscordClientOnLog;
 
             await client.LoginAsync(TokenType.Bot, BotSettings.Config["Token"]);
             await client.StartAsync();
 
-            Thread.Sleep(-1);
+
+            await Task.Delay(-1);
         }
 
         private static void ConfirurateServices(IServiceCollection services)
         {
-            var @string = BotSettings.Config["ConnectionString"];
-
             services.AddDbContext<BotDbContext>(options => options.UseSqlServer(BotSettings.Config["ConnectionString"]));
 
             services.AddSingleton(BotSettings.Config);
+
+            services.AddSingleton<InteractionHandler>();
 
             services.AddSingleton(x => new DiscordSocketClient(new DiscordSocketConfig
             {
@@ -71,6 +79,7 @@ namespace DiscordArenaBot.Core
             services.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()));
 
             services.AddScoped<IPlayerService, PlayerService>();
+            services.AddScoped<IMatchService, MatchService>();
         }
 
         private static Task DiscordClientOnLog(LogMessage arg)

@@ -18,30 +18,17 @@ namespace DiscordArenaBot.Arena
         }
 
 
-        private static double GetKFactor(Player player)
+        private static double GetKFactor(Player player) => player.Elo switch
         {
-            int elo = player.Elo;
-
-            switch (elo)
-            {
-                case < 800:
-                    return 40;
-                case < 950:
-                    return 35;
-                case < 1250:
-                    return 30;
-                case < 1400:
-                    return 25;
-                case < 1550:
-                    return 20;
-                case < 1700:
-                    return 15;
-                case < 1850:
-                    return 10;
-                default:
-                    return 5;
-            }
-        }
+            < 800  => 40,
+            < 950  => 35,
+            < 1250 => 30,
+            < 1400 => 25,
+            < 1550 => 20,
+            < 1700 => 15,
+            < 1850 => 10,
+            _ => 5,
+        };
 
 
         private static double GetQFactor(Player player) =>

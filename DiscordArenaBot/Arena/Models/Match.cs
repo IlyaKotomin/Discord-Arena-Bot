@@ -7,10 +7,8 @@ namespace DiscordArenaBot.Arena.Models
         [Key]
         public int Id { get; set; }
 
-        [Required]
         public Player? Winner { get; set; }
 
-        [Required]
         public Player? Loser { get; set; }
     }
 }
