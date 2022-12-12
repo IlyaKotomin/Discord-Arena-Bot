@@ -8,7 +8,7 @@ using DiscordArenaBot.Data.Services;
 using DiscordArenaBot.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace DiscordArenaBot
+namespace DiscordArenaBot.Core
 {
     public static class Programm
     {

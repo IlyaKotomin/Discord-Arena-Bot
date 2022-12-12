@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 
-namespace DiscordArenaBot
+namespace DiscordArenaBot.Core
 {
     public static class Startup
     {
