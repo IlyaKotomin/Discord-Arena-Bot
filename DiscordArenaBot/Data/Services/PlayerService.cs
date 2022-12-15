@@ -11,7 +11,7 @@ namespace DiscordArenaBot.Data.Services
 
         public async Task<Player> GetPlayerByIdAsync(ulong id)
         {
-            var player = await _context.Players.Where(n => n.Id == id).FirstOrDefaultAsync();
+            var player = await _context.Players.Where(n => n.DiscordId == id).FirstOrDefaultAsync();
 
             return player!;
         }

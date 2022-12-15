@@ -26,6 +26,11 @@ namespace DiscordArenaBot.Data.Services
                 n => player.Id == n.Winner!.Id || player.Id == n.Loser!.Id
                 ).Take(count).ToListAsync();
 
+        public async Task<List<Match>> GetPlayerMatches(Player player) =>
+            await _context.Matches.Where(
+                n => player.Id == n.Winner!.Id || player.Id == n.Loser!.Id
+                ).ToListAsync();
+
         public async Task RemoveMatch(Match match)
         {
             _context.Matches.Remove(match);
@@ -38,6 +43,16 @@ namespace DiscordArenaBot.Data.Services
             _context.Matches.Update(match);
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Match>> GetWins(Player player)
+        {
+            return await _context.Matches.Where(n => n.Winner!.DiscordId == player.DiscordId).ToListAsync();
+        }
+
+        public async Task<List<Match>> GetLoses(Player player)
+        {
+            return await _context.Matches.Where(n => n.Loser!.DiscordId == player.DiscordId).ToListAsync();
         }
     }
 }

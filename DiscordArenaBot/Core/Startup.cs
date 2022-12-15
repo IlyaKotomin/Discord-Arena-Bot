@@ -25,6 +25,8 @@ namespace DiscordArenaBot.Core
 
         public static async Task StartApplication()
         {
+            await InitDataBase();
+
             using IHost host = Host.CreateDefaultBuilder().ConfigureServices(
                  (context, services) => ConfirurateServices(services)).Build();
 
@@ -80,6 +82,14 @@ namespace DiscordArenaBot.Core
 
             services.AddScoped<IPlayerService, PlayerService>();
             services.AddScoped<IMatchService, MatchService>();
+        }
+
+        private static async Task InitDataBase()
+        {
+            using (var databaseContext = new BotDbContext(new DbContextOptions<BotDbContext>()))
+            {
+                await databaseContext.Database.EnsureCreatedAsync();
+            }
         }
 
         private static Task DiscordClientOnLog(LogMessage arg)

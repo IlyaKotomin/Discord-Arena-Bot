@@ -6,17 +6,21 @@ namespace DiscordArenaBot.Arena
     {
         public static void CalculateRating(Player winner, Player loser)
         {
-            double winnerK = GetKFactor(winner);
-            double loserK = GetKFactor(loser);
-
-            double resultK = (winnerK + loserK) / 2.0;
-
-            int deltaElo = (int)(resultK * (1 - Getexpectation(winner, loser)));
+            int deltaElo = CalculateDelta(winner, loser);
 
             winner.Elo += deltaElo;
             loser.Elo -= deltaElo;
         }
 
+        public static int CalculateDelta(Player winner, Player loser)
+        {
+            double winnerK = GetKFactor(winner);
+            double loserK = GetKFactor(loser);
+
+            double resultK = (winnerK + loserK) / 2.0;
+
+            return (int)(resultK * (1 - GetExpectation(winner, loser)));
+        }
 
         private static double GetKFactor(Player player) => player.Elo switch
         {
@@ -30,12 +34,10 @@ namespace DiscordArenaBot.Arena
             _ => 5,
         };
 
-
         private static double GetQFactor(Player player) =>
             Math.Pow(10.0, (double)player.Elo / 400.0);
 
-
-        private static double Getexpectation(Player expectationWinner, Player expectationLoser)
+        private static double GetExpectation(Player expectationWinner, Player expectationLoser)
         {
             double winnerQFactor = GetQFactor(expectationWinner);
             double loserQFactor = GetQFactor(expectationLoser);

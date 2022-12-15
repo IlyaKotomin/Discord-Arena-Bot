@@ -14,26 +14,26 @@ namespace DiscordArenaBot.Data.Services.BotHandlers
     public class InteractionHandler
     {
         private readonly DiscordSocketClient _client;
-        private readonly InteractionService _commands;
+        private readonly InteractionService _interactionService;
         private readonly IServiceProvider _services;
 
-        public InteractionHandler(DiscordSocketClient client, InteractionService commands, IServiceProvider services)
+        public InteractionHandler(DiscordSocketClient client, InteractionService interactionService, IServiceProvider services)
         {
             _client = client;
-            _commands = commands;
+            _interactionService = interactionService;
             _services = services;
         }
 
 
         public async Task InitializeAsync()
         {
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+            await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
 
             _client.InteractionCreated += HandleInteraction;
 
-            _commands.SlashCommandExecuted += SlashCommandExecuted;
-            _commands.ContextCommandExecuted += ContextCommandExecuted;
-            _commands.ComponentCommandExecuted += ComponentCommandExecuted;
+            _interactionService.SlashCommandExecuted += SlashCommandExecuted;
+            _interactionService.ContextCommandExecuted += ContextCommandExecuted;
+            _interactionService.ComponentCommandExecuted += ComponentCommandExecuted;
         }
 
         private Task ComponentCommandExecuted(ComponentCommandInfo arg1, IInteractionContext arg2, IResult arg3)
@@ -55,7 +55,7 @@ namespace DiscordArenaBot.Data.Services.BotHandlers
             try
             {
                 var ctx = new BotSocketInteractionContext(_client, arg, _services);
-                await _commands.ExecuteCommandAsync(ctx, _services);
+                await _interactionService.ExecuteCommandAsync(ctx, _services);
             }
             catch (Exception ex)
             {

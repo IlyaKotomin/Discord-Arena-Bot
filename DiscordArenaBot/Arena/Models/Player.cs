@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Discord;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -10,15 +11,29 @@ namespace DiscordArenaBot.Arena.Models
 {
     public class Player
     {
+        public Player()
+        {
+
+        }
+
+        public Player(IUser user)
+        {
+            DiscordId = user.Id;
+            Elo = 1000;
+        }
+
         [Key]
         public ulong Id { get; set; }
 
-        public int TotalGames { get; set; }
-
-        public int Wins { get; set; }
+        [Required]
+        public ulong DiscordId { get; set; }
 
         [DefaultValue("1000")]
         public int Elo { get; set; }
+
+        public int TotalGames => 0;
+
+        public int Wins => 0;
 
         public int Loses => TotalGames - Wins;
 
