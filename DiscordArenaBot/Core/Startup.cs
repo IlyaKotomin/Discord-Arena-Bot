@@ -52,6 +52,8 @@ namespace DiscordArenaBot.Core
             client.Ready += async () =>
             {
                 await commands.RegisterCommandsGloballyAsync(true);
+
+                await client.SetGameAsync("ESG Arenas!", "https://www.youtube.com/watch?v=OoggCq-EZ1w", ActivityType.Streaming);
             };
 
 
@@ -81,7 +83,6 @@ namespace DiscordArenaBot.Core
             services.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()));
 
             services.AddScoped<IPlayerService, PlayerService>();
-            services.AddScoped<IMatchService, MatchService>();
         }
 
         private static async Task InitDataBase()

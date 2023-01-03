@@ -14,15 +14,12 @@ namespace DiscordArenaBot.Data.Contexts
     {
         public IPlayerService PlayerService { get; private set; }
 
-        public IMatchService MatchService { get; private set; }
-
         public BotSocketInteractionContext(DiscordSocketClient client,
                                            SocketInteraction interaction,
                                            IServiceProvider serviceProvider)
                                             : base(client, interaction)
         {
             PlayerService = serviceProvider.GetRequiredService<IPlayerService>();
-            MatchService = serviceProvider.GetRequiredService<IMatchService>();
         }
     }
 }

@@ -3,6 +3,8 @@ using DiscordArenaBot.Arena.Models;
 using DiscordArenaBot.Data;
 using DiscordArenaBot.Data.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace DiscordArenaBot.Arena
 {
@@ -18,56 +20,76 @@ namespace DiscordArenaBot.Arena
 
         private static IGuild? _guild;
 
-        private static readonly MatchService _matchService = new(new (new DbContextOptions<BotDbContext>()));
+        private static readonly PlayerService _playerService = new(new(new()));
 
-        private static readonly PlayerService _playerService = new(new (new DbContextOptions<BotDbContext>()));
-
-        public static void Stop() => Started = false;
-
-        static Matchmaking() => HandleMatches();
+        public static void Stop()
+        {
+            Started = false;
+            PlayersInLine.Clear();
+        }
 
         public static void Start(IDiscordClient client, IGuild guild)
         {
             _client = client;
             _guild = guild;
 
+            if(Started) return;
+
             Started = true;
-        }        
 
-        private static async void HandleMatches()
+            Task.Run(HandleMatches);
+        }
+
+        private static void HandleMatches()
         {
-            while (Started)
+            while (true)
             {
-                if (PlayersInLine.Count < 2)
-                    return;
+                if (!Started || PlayersInLine.Count < 2)
+                    continue;
 
-                await PlayersSelection();
+                Player player1 = GetRandomPlayer(PlayersInLine);
+                Player player2 = GetRandomPlayer(PlayersInLine);
+
+                if (player1 is null || player2 is null)
+                    continue;
+
+                if (player1.LastOponent == player2)
+                    continue;
+
+                if (player1 == player2)
+                    continue;
+
+                try
+                {
+                    PlayersInLine.Remove(player1);
+                    PlayersInLine.Remove(player2);
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+
+                new Thread(async () => await PlayersSelection(player1, player2)).Start();
             }
         }
 
-        private static async Task PlayersSelection()
+        private static async Task PlayersSelection(Player player1,  Player player2)
         {
-            var player1 = PlayersInLine.OrderBy(p => p.Elo).FirstOrDefault();
-
-            var player1LastMatch =  _matchService.GetPlayerMatches(player1!, 1).Result.FirstOrDefault();
-
-            var player2 = PlayersInLine.OrderBy(p => p.Elo).Where(
-                p => player1LastMatch!.Winner != p && player1LastMatch.Loser != p).FirstOrDefault();
-
-            if (player2 == null || player1 == null || _client == null || _guild == null)
+            if (_client == null || _guild == null)
                 return;
-
-            PlayersInLine.Remove(player1);
-            PlayersInLine.Remove(player2);
 
             var lobby = await Lobby.BuildNewLobby(player1,
                                                   player2,
                                                   _playerService,
-                                                  _matchService,
                                                   _client,
                                                   _guild);
 
             await lobby.Start();
+        }
+        private static Player GetRandomPlayer(List<Player> playerList)
+        {
+            Player player = playerList[BotSettings.Random.Next(PlayersInLine.Count)];
+            return player;
         }
     }
 }

@@ -8,8 +8,6 @@ namespace DiscordArenaBot.Data
     {
         public DbSet<Player> Players { get; set; }
 
-        public DbSet<Match> Matches { get; set; }
-
         public BotDbContext(DbContextOptions<BotDbContext> options) : base(options)
         {
 

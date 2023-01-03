@@ -1,4 +1,5 @@
 ﻿using Discord;
+using DiscordArenaBot.Data.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -28,14 +29,10 @@ namespace DiscordArenaBot.Arena.Models
         [Required]
         public ulong DiscordId { get; set; }
 
-        [DefaultValue("1000")]
+
+        public Player? LastOponent;
+
         public int Elo { get; set; }
-
-        public int TotalGames => 0;
-
-        public int Wins => 0;
-
-        public int Loses => TotalGames - Wins;
 
         public int Level => Elo switch
         {

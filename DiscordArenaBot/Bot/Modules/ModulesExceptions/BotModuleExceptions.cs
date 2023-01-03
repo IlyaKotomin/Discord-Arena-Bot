@@ -47,10 +47,22 @@ namespace DiscordArenaBot.Bot.Modules.ModulesExceptions
 
         public static async Task<bool> IsNotArenaStarted(IUser user, BotSocketInteractionContext context)
         {
-            if (Matchmaking.Started)
+            if (!Matchmaking.Started)
                 await context.Interaction.RespondAsync(embed: BotEmbeds.ArenaNotStarted(user));
 
             return !Matchmaking.Started;
+        }
+
+        public static async Task<bool> AvailableJoinToArena(BotSocketInteractionContext context)
+        {
+            var player = await context.PlayerService.GetPlayerByIdAsync(context.User.Id);
+
+            var result = Matchmaking.PlayersInLine.Contains(player);
+
+            if (result)
+                await context.Interaction.RespondAsync(embed: BotEmbeds.AlreadyInArena(context.User));
+
+            return result;
         }
     }
 }

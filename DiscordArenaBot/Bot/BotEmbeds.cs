@@ -2,10 +2,10 @@
 using DiscordArenaBot.Arena;
 using DiscordArenaBot.Arena.Models;
 using DiscordArenaBot.Data.Contexts;
-using DiscordArenaBot.Data.Extantions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -185,35 +185,24 @@ namespace DiscordArenaBot.Bot
         public static  async Task<Embed> StatsBuilder(IUser user, BotSocketInteractionContext context)
         {
             Player player = await context.PlayerService.GetPlayerByIdAsync(user.Id);
-            var allMatches = await context.MatchService.GetPlayerMatches(player);
-            var last5Matches = await context.MatchService.GetPlayerMatches(player, 5);
 
 
 
-
-            var author = new EmbedAuthorBuilder();
-            author.IconUrl = user.GetAvatarUrl();
-            author.Name = user.Username;
-
-            var fields = new List<EmbedFieldBuilder>();
-            fields.Add(new EmbedFieldBuilder() { Name = "⠀⠀⠀Elo", Value = "⠀⠀⠀" + player.Elo, IsInline = true });
-            fields.Add(new EmbedFieldBuilder() { Name = "Wins", Value = player.Wins, IsInline = true });
-            fields.Add(new EmbedFieldBuilder() { Name = "Loses", Value = player.Loses, IsInline = true });
-            fields.Add(new EmbedFieldBuilder() { Name = "⠀⠀⠀Total Games", Value = "⠀⠀⠀" + player.TotalGames, IsInline = true });
-            fields.Add(new EmbedFieldBuilder() { Name = "Max Win Streak", Value = player.GetStreak(last5Matches, Data.Enums.MatchStreakType.Wins), IsInline = true });
-            fields.Add(new EmbedFieldBuilder() { Name = "Max Lose Streak", Value = player.GetStreak(last5Matches, Data.Enums.MatchStreakType.Loses), IsInline = true });
-            fields.Add(new EmbedFieldBuilder() { Name = "╚═════════════════════════════════════╝", Value = "_ _", IsInline = false });
-            fields.Add(new EmbedFieldBuilder() { Name = "Last games", Value = player.GetEmojiLastGamesString(last5Matches), IsInline = false });
+            var authorBuilder = new EmbedAuthorBuilder();
+            authorBuilder.WithIconUrl(user.GetAvatarUrl());
+            authorBuilder.WithName(user.Username);
 
             var builder = new EmbedBuilder();
-            //builder.Title = "Rank: " + GetMedalEmote(player.Level);
-            builder.Description = "**╔═════════════════════════════════════╗**";
-            //builder.ThumbnailUrl = GetTrophyImgUrl(player.Level);
-            //builder.Color = GetColorByLvl(player.Level);
-            //builder.ImageUrl = user.GetAvatarUrl();
-            builder.Fields = fields;
-            builder.Author = author;
+            builder.Author = authorBuilder;
 
+            builder.AddField("Elo:", player.Elo, true);
+            builder.AddField("Level:", player.Level, true);
+            builder.AddField("Rank:", BotSettings.GetMedalEmote(player.Level), true);
+
+            builder.ThumbnailUrl = BotSettings.GetTrophyImgUrl(player.Level);
+
+            builder.Color = BotSettings.GetColorByLvl(player.Level);
+            
             return builder.Build();
         }
 
@@ -228,14 +217,14 @@ namespace DiscordArenaBot.Bot
             fields.Add(new EmbedFieldBuilder()
             {
                 Name = $"1️⃣ Elo: {player1.Elo} (+{EloRatingSystem.CalculateDelta(player1, player2)}/-{EloRatingSystem.CalculateDelta(player2, player1)})",
-                Value = $"<@{player1.Id}>",
+                Value = $"<@{player1.DiscordId}>",
                 IsInline = false
             });
 
             fields.Add(new EmbedFieldBuilder()
             {
                 Name = $"2️⃣ Elo: {player2.Elo} (+{EloRatingSystem.CalculateDelta(player2, player1)}/-{EloRatingSystem.CalculateDelta(player1, player2)})",
-                Value = $"<@{player2.Id}>",
+                Value = $"<@{player2.DiscordId}>",
                 IsInline = false
             });
 
@@ -253,7 +242,7 @@ namespace DiscordArenaBot.Bot
         public static Embed EmoteCheckBuilder(Player player)
         {
             var builder = new EmbedBuilder();
-            builder.Description = $"Add reaction here if <@{player.Id}> won!";
+            builder.Description = $"Add reaction here if <@{player.DiscordId}> won!";
             return builder.Build();
         }
         public static Embed Top25PlayersBuilder(List<Player> players, string imgUrl)
@@ -261,14 +250,14 @@ namespace DiscordArenaBot.Bot
             string description = "";
 
             var builder = new EmbedBuilder();
-            builder.Title = "FDG Arena top players";
+            builder.Title = "Arena top players";
             builder.ThumbnailUrl = imgUrl;
             builder.Color = new Color(52, 235, 89);
 
             var fields = new List<EmbedFieldBuilder>();
 
-            for (int i = 0; i < players.Count(); i++)
-                description += $"{BotSettings.GetMedalEmote(players[i].Level)}**{i + 1}:**<@{players[i].Id}> ** - ** elo: {players[i].Elo}\n";
+            for (int i = 0; i < players.Count; i++)
+                    description += $"{BotSettings.GetTopMedal(i)}**{i + 1}:**<@{players[i].DiscordId}> ** - ** elo: {players[i].Elo}\n";
 
             builder.Description = description;
             builder.Fields = fields;

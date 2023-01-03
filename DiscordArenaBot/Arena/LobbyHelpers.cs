@@ -11,7 +11,6 @@ namespace DiscordArenaBot.Arena
         public static async Task<Lobby> BuildNewLobby(Player player1,
                      Player player2,
                      IPlayerService playerService,
-                     IMatchService matchService,
                      IDiscordClient client,
                      IGuild guild)
         {
@@ -21,7 +20,6 @@ namespace DiscordArenaBot.Arena
             return new Lobby(player1,
                              player2,
                              playerService,
-                             matchService,
                              client,
                              guild,
                              channel);
@@ -32,12 +30,12 @@ namespace DiscordArenaBot.Arena
                                                      IDiscordClient client,
                                                      IGuild guild)
         {
-            var player1User = await client.GetUserAsync(player1.Id);
-            var player2User = await client.GetUserAsync(player2.Id);
+            var player1User = await client.GetUserAsync(player1.DiscordId);
+            var player2User = await client.GetUserAsync(player2.DiscordId);
 
             var channel = await guild.CreateTextChannelAsync($"{player1.DiscordId}vs{player2.DiscordId}");
 
-            await channel.SendMessageAsync($"||<@{player1.Id}><@{player2.Id}>||");
+            await channel.SendMessageAsync($"||<@{player1.DiscordId}><@{player2.DiscordId}>||");
 
             await channel.AddPermissionOverwriteAsync(guild.EveryoneRole, new OverwritePermissions(viewChannel: PermValue.Deny));
             await channel.AddPermissionOverwriteAsync(player1User, new OverwritePermissions(viewChannel: PermValue.Allow));
@@ -46,13 +44,6 @@ namespace DiscordArenaBot.Arena
             await channel.AddPermissionOverwriteAsync(guild.Roles.FirstOrDefault(
                 x => x.Id == ulong.Parse(BotSettings.Config["ArenaManagerHostRoleId"]!)),
                 new OverwritePermissions(viewChannel: PermValue.Allow));
-
-            var gameInfoMessage = await channel.SendMessageAsync(embed: BotEmbeds.GameInfo(player1, player2));
-
-            Emoji emoteWin1 = new Emoji("1️⃣");
-            Emoji emoteWin2 = new Emoji("2️⃣");
-
-            await gameInfoMessage.AddReactionsAsync(new List<Emoji>() { emoteWin1, emoteWin2 });
 
             return channel;
         }
