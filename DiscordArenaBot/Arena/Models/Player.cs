@@ -32,6 +32,8 @@ namespace DiscordArenaBot.Arena.Models
 
         public Player? LastOponent;
 
+        public bool LookingForMatch = true;
+
         public int Elo { get; set; }
 
         public int Level => Elo switch

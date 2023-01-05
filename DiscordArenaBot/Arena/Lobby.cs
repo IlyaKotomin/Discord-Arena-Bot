@@ -11,8 +11,12 @@ namespace DiscordArenaBot.Arena
 {
     public partial class Lobby
     {
+        private IUser _user1;
+        private IUser _user2;
+
         private Player _player1;
         private Player _player2;
+
         private IPlayerService _playerService;
 
         private IDiscordClient _discordClient;
@@ -20,22 +24,22 @@ namespace DiscordArenaBot.Arena
 
         private ITextChannel _channel;
 
-        private Lobby(Player player1,
-                     Player player2,
+        private Lobby(IUser user1,
+                     IUser user2,
                      IPlayerService playerService,
                      IDiscordClient discordClient,
                      IGuild guild,
                      ITextChannel channel)
         {
-            _player1 = player1;
-            _player2 = player2;
+            _user1 = user1;
+            _user2 = user2;
             _playerService = playerService;
             _discordClient = discordClient;
             _guild = guild;
             _channel = channel;
 
-            Matchmaking.PlayersInMatch.Add(_player1);
-            Matchmaking.PlayersInMatch.Add(_player2);
+            _player1 = _playerService.GetPlayerByIdAsync(_user1.Id).Result;
+            _player2 = _playerService.GetPlayerByIdAsync(_user2.Id).Result;
         }
 
         public async Task Start()
@@ -44,13 +48,14 @@ namespace DiscordArenaBot.Arena
 
             Emoji emoteWin1 = new Emoji("1️⃣");
             Emoji emoteWin2 = new Emoji("2️⃣");
+            Emoji emoteDraw = new Emoji("🔁");
 
-            await infoMessage.AddReactionsAsync(new List<Emoji>() { emoteWin1, emoteWin2 });
+            await infoMessage.AddReactionsAsync(new List<Emoji>() { emoteWin1, emoteWin2, emoteDraw });
 
-            await Task.Run(() => HandleReactions(infoMessage, emoteWin1, emoteWin2));
+            await Task.Run(() => HandleReactions(infoMessage, emoteWin1, emoteWin2, emoteDraw));
         }
 
-        private async Task HandleReactions(IUserMessage message, IEmote winEmote, IEmote loseEmote)
+        private async Task HandleReactions(IUserMessage message, IEmote winEmote, IEmote loseEmote, IEmote drawEmote)
         {
             while (_channel != null)
             {
@@ -58,7 +63,7 @@ namespace DiscordArenaBot.Arena
                 {
                     var player1WinVoting = await message.GetReactionUsersAsync(winEmote, 1000).FlattenAsync();
                     var player2WinVoting = await message.GetReactionUsersAsync(loseEmote, 1000).FlattenAsync();
-
+                    var drawVoting = await message.GetReactionUsersAsync(drawEmote, 1000).FlattenAsync();
 
                     if (player1WinVoting.Count() >= 3)
                     {
@@ -68,6 +73,11 @@ namespace DiscordArenaBot.Arena
                     else if (player2WinVoting.Count() >= 3)
                     {
                         EndMatch(_player2, _player1);
+                        break;
+                    }
+                    else if (drawVoting.Count() >= 3)
+                    {
+                        EndMatchAsDraw(_player1, _player2);
                         break;
                     }
                 }
@@ -86,21 +96,40 @@ namespace DiscordArenaBot.Arena
             await _channel.DeleteAsync();
         }
 
+        private async void EndMatchAsDraw(Player player1, Player player2)
+        {
+            await CreateDrawLog(player1, player2);
+
+            await _channel.DeleteAsync();
+        }
+
+        private async Task CreateDrawLog(Player player1, Player player2)
+        {
+            ITextChannel? logChannel = await _guild.GetChannelAsync(BotSettings.LogChannel) as ITextChannel;
+
+            if (logChannel is null || player1 is null || player2 is null)
+                return;
+
+            string message = $"```diff\r\nGAME FINISHED AS A DRAW\r\n\r\n{player1} vs {player2}```";
+
+            await logChannel.SendMessageAsync(message);
+        }
+
         private void UpdatePlayers(Player winner, Player loser)
         {
             winner.LastOponent = loser;
             loser.LastOponent = winner;
-
-            Matchmaking.PlayersInMatch.Remove(winner);
-            Matchmaking.PlayersInMatch.Remove(loser);
 
             EloRatingSystem.CalculateRating(winner, loser);
 
             _playerService.UpdatePlayerAsync(winner);
             _playerService.UpdatePlayerAsync(loser);
 
-            Matchmaking.PlayersInLine.Add(winner);
-            Matchmaking.PlayersInLine.Add(loser);
+            if (winner.LookingForMatch)
+                Matchmaking.PlayersInLine.Add(winner);
+
+            if(loser.LookingForMatch)
+                Matchmaking.PlayersInLine.Add(loser);
         }
         private async Task CreateLog(Player winner, Player loser)
         {

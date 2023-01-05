@@ -57,12 +57,12 @@ namespace DiscordArenaBot.Bot.Modules.ModulesExceptions
         {
             var player = await context.PlayerService.GetPlayerByIdAsync(context.User.Id);
 
-            var result = Matchmaking.PlayersInLine.Contains(player);
+            bool isInLine = Matchmaking.IsPlayerInLine(player);
 
-            if (result)
+            if (isInLine)
                 await context.Interaction.RespondAsync(embed: BotEmbeds.AlreadyInArena(context.User));
 
-            return result;
+            return !isInLine;
         }
     }
 }

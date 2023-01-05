@@ -12,8 +12,6 @@ namespace DiscordArenaBot.Arena
     {
         public static List<Player> PlayersInLine = new List<Player>();
 
-        public static List<Player> PlayersInMatch = new List<Player>();
-
         public static bool Started { get; private set; }
 
         private static IDiscordClient? _client;
@@ -21,6 +19,38 @@ namespace DiscordArenaBot.Arena
         private static IGuild? _guild;
 
         private static readonly PlayerService _playerService = new(new(new()));
+
+        public static bool IsPlayerInLine(Player player)
+        {
+            if (player == null)
+                return false;
+
+            bool result = false;
+
+            foreach(var playerInLine in PlayersInLine)
+                if(playerInLine.DiscordId == player.DiscordId)
+                    result = true;
+
+            return result;
+        }
+
+        public static Player? GetPlayerFromLineById(ulong discordId)
+        {
+            return PlayersInLine.Where(n => discordId == n.DiscordId).FirstOrDefault();
+        }
+
+        public static void RemovePlayerFromList(Player player, List<Player> list)
+        {
+            try
+            {
+                foreach (var playerInList in list.Where(p => p.DiscordId == player.DiscordId))
+                    list.Remove(playerInList);
+            }
+            catch (Exception)
+            {
+
+            }
+        }
 
         public static void Stop()
         {
@@ -48,38 +78,32 @@ namespace DiscordArenaBot.Arena
                     continue;
 
                 Player player1 = GetRandomPlayer(PlayersInLine);
+                RemovePlayerFromList(player1, PlayersInLine);
+
                 Player player2 = GetRandomPlayer(PlayersInLine);
+                RemovePlayerFromList(player2, PlayersInLine);
 
-                if (player1 is null || player2 is null)
+                if (player1 == null || player2 == null)
                     continue;
 
-                if (player1.LastOponent == player2)
+                if (player1.LastOponent != null && 
+                    player1.LastOponent.DiscordId == player2.DiscordId)
                     continue;
 
-                if (player1 == player2)
+                if (player1.DiscordId == player2.DiscordId || player1 == player2)
                     continue;
-
-                try
-                {
-                    PlayersInLine.Remove(player1);
-                    PlayersInLine.Remove(player2);
-                }
-                catch (Exception)
-                {
-                    continue;
-                }
 
                 new Thread(async () => await PlayersSelection(player1, player2)).Start();
             }
         }
 
-        private static async Task PlayersSelection(Player player1,  Player player2)
+        private static async Task PlayersSelection(Player player1, Player player2)
         {
             if (_client == null || _guild == null)
                 return;
 
-            var lobby = await Lobby.BuildNewLobby(player1,
-                                                  player2,
+            var lobby = await Lobby.BuildNewLobby(player1.DiscordId,
+                                                  player2.DiscordId,
                                                   _playerService,
                                                   _client,
                                                   _guild);
@@ -88,8 +112,7 @@ namespace DiscordArenaBot.Arena
         }
         private static Player GetRandomPlayer(List<Player> playerList)
         {
-            Player player = playerList[BotSettings.Random.Next(PlayersInLine.Count)];
-            return player;
+            return playerList[BotSettings.Random.Next(PlayersInLine.Count)];
         }
     }
 }

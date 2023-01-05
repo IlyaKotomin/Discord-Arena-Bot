@@ -18,21 +18,22 @@ namespace DiscordArenaBot.Bot.Modules.ArenaModules
             if (await BotModuleExceptions.IsAlreadyArenaStarted(Context))
                 return;
 
-            Matchmaking.Start(Context.Client, Context.Guild);
 
-            var guildEvent = await Context.Guild.CreateEventAsync("ESG Arena",
-                                                                  DateTimeOffset.UtcNow.AddMinutes(1),
-                                                                  GuildScheduledEventType.External,
-                                                                  endTime: DateTimeOffset.UtcNow.AddHours(2),
-                                                                  location: "ESG",
-                                                                  description: BotSettings.EventDescription);
-            await guildEvent.StartAsync();
+            //var guildEvent = await Context.Guild.CreateEventAsync("ESG Arena",
+            //                                                      DateTimeOffset.UtcNow.AddMinutes(1),
+            //                                                      GuildScheduledEventType.External,
+            //                                                      endTime: DateTimeOffset.UtcNow.AddHours(2),
+            //                                                      location: "ESG",
+            //                                                      description: BotSettings.EventDescription);
+            //await guildEvent.StartAsync();
 
-            ITextChannel? logChannel = Context.Guild.GetTextChannel(BotSettings.LogChannel);
+            //ITextChannel? logChannel = Context.Guild.GetTextChannel(BotSettings.LogChannel);
 
-            await logChannel.SendMessageAsync("```The Arena was launched!``` <@&1046214756094197861>");
+            //await logChannel.SendMessageAsync("```The Arena was launched!``` <@&1046214756094197861>");
 
             await RespondAsync(embed: BotEmbeds.ArenaStarted());
+
+            Matchmaking.Start(Context.Client, Context.Guild);
         }
 
         [SlashCommand("stop", "Arena launch")]

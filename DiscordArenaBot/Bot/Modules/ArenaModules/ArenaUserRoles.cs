@@ -1,7 +1,9 @@
 ﻿using Discord.Interactions;
 using DiscordArenaBot.Arena;
+using DiscordArenaBot.Arena.Models;
 using DiscordArenaBot.Bot.Modules.ModulesExceptions;
 using DiscordArenaBot.Data.Contexts;
+using System.Numerics;
 
 namespace DiscordArenaBot.Bot.Modules.ArenaModules
 {
@@ -10,36 +12,32 @@ namespace DiscordArenaBot.Bot.Modules.ArenaModules
         [SlashCommand("join", "Join to arena")]
         public async Task JoinArenaModule()
         {
-            if (await BotModuleExceptions.IsNotArenaStarted(Context.User, Context))
-                return;
-
-            if (await BotModuleExceptions.AvailableJoinToArena(Context))
+            if (!await BotModuleExceptions.AvailableJoinToArena(Context))
                 return;
 
             if (await BotModuleExceptions.UserUnRegisteredState(Context.User, Context))
                 return;
 
-            var player = await Context.PlayerService.GetPlayerByIdAsync(Context.User.Id);
 
-            Matchmaking.PlayersInLine.Add(player);
+
+            Matchmaking.PlayersInLine.Add(await Context.PlayerService.GetPlayerByIdAsync(Context.User.Id));
 
             await RespondAsync(embed: BotEmbeds.JoinedToArena(Context.User));
         }
 
-        [SlashCommand("left", "Left from arena")]
+        [SlashCommand("leave", "Leave from arena")]
         public async Task LeftArenaModule()
         {
-            if (await BotModuleExceptions.IsNotArenaStarted(Context.User, Context)
-                || await BotModuleExceptions.UserUnRegisteredState(Context.User, Context))
+            if (await BotModuleExceptions.UserUnRegisteredState(Context.User, Context))
                 return;
 
-            var player = await Context.PlayerService.GetPlayerByIdAsync(Context.User.Id);
+            Player player = Matchmaking.GetPlayerFromLineById(Context.User.Id)!;
 
-            try
+            if (player != null)
             {
-                Matchmaking.PlayersInLine.Remove(player);
+                player.LookingForMatch = false;
+                //Matchmaking.RemovePlayerFromList(player, Matchmaking.PlayersInLine);
             }
-            catch (Exception) { }
 
             await RespondAsync(embed: BotEmbeds.LeftFromArena());
         }
