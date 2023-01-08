@@ -25,9 +25,9 @@ namespace DiscordArenaBot.Arena
                 var userPair = sortedDictionary[i];
 
                 if (userPair.Value.Item1 > 0)
-                    description += $"{BotSettings.GetTopMedal(i)} **+{userPair.Value.Item1}** to <@{userPair.Key.Id}> **(currnet: {userPair.Value.Item2})**\n";
+                    description += $"{BotSettings.GetTopMedal(i)} **+{userPair.Value.Item1}** to <@{userPair.Key.Id}> **(current: {userPair.Value.Item2})**\n";
                 else
-                    description += $"{BotSettings.GetTopMedal(i)} **{userPair.Value.Item1}** from <@{userPair.Key.Id}> **(currnet: {userPair.Value.Item2})**\n";
+                    description += $"{BotSettings.GetTopMedal(i)} **{userPair.Value.Item1}** from <@{userPair.Key.Id}> **(current: {userPair.Value.Item2})**\n";
             }
 
             builder.Title = "Local Arena top players!";
