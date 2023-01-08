@@ -16,11 +16,16 @@ namespace DiscordArenaBot
         public static string BronzeEmoteString = "<:bronze:1013959116995170334>";
         public static string GreyEmoteString = "<:losser:1013959118630944839>";
 
+        public static string WinEmoji = "<:Win:1013959984381440010>";
+        public static string LoseEmoji = "<:Lose:1013959982678560869>";
+
         public static string EventDescription = "Join to arena!\nUse ```/arena join``` command.\nWe are waiting for you!";
 
         public static IConfigurationRoot Config => Startup.Config;
 
-        public static ulong LogChannel => ulong.Parse(Config["LogChannel"]!);
+        public static ulong LogChannelId => ulong.Parse(Config["LogChannelId"]!);
+        public static ulong MainChannelId => ulong.Parse(Config["MainChannelId"]!);
+
 
         public static string GetMedalEmote(int lvl)
         {

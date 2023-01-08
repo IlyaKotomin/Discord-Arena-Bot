@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using DiscordArenaBot.Arena;
+using DiscordArenaBot.Arena.Models;
 using DiscordArenaBot.Data;
 using DiscordArenaBot.Data.Contexts;
 using DiscordArenaBot.Data.Services;
@@ -63,6 +64,20 @@ namespace DiscordArenaBot.Bot.Modules.ModulesExceptions
                 await context.Interaction.RespondAsync(embed: BotEmbeds.AlreadyInArena(context.User));
 
             return !isInLine;
+        }
+
+        public static async Task<bool> IsInArenaLine(BotSocketInteractionContext context)
+        {
+            Player? player = Matchmaking.PlayersInLine.Where(p => p.DiscordId == context.User.Id).FirstOrDefault();
+
+            if (player != null)
+            {
+                player.LookingForMatch = true;
+                
+                await context.Interaction.RespondAsync("Succesfully rejoined!");
+            }
+
+            return player != null;
         }
     }
 }

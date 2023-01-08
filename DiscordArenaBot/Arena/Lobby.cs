@@ -91,13 +91,17 @@ namespace DiscordArenaBot.Arena
         {
             await CreateLog(winner, loser);
 
-            UpdatePlayers(winner, loser);
+            UpdatePlayers(winner, loser, out int delta);
+
+            UpdateArenaTop(winner, loser, delta);
 
             await _channel.DeleteAsync();
         }
 
         private async void EndMatchAsDraw(Player player1, Player player2)
         {
+            ChangeLookingForMatchState(player1, player2);
+
             await CreateDrawLog(player1, player2);
 
             await _channel.DeleteAsync();
@@ -105,35 +109,38 @@ namespace DiscordArenaBot.Arena
 
         private async Task CreateDrawLog(Player player1, Player player2)
         {
-            ITextChannel? logChannel = await _guild.GetChannelAsync(BotSettings.LogChannel) as ITextChannel;
+            ITextChannel? logChannel = await _guild.GetChannelAsync(BotSettings.LogChannelId) as ITextChannel;
 
             if (logChannel is null || player1 is null || player2 is null)
                 return;
 
-            string message = $"```diff\r\nGAME FINISHED AS A DRAW\r\n\r\n{player1} vs {player2}```";
+            string message = $"```diff\r\n+++ 0 to {_user1.Username}\r\n--- 0 to {_user2.Username}\r\n```";
 
             await logChannel.SendMessageAsync(message);
         }
 
-        private void UpdatePlayers(Player winner, Player loser)
+        private void UpdatePlayers(Player winner, Player loser, out int delta)
         {
-            winner.LastOponent = loser;
-            loser.LastOponent = winner;
+            ChangeLookingForMatchState(winner, loser);
 
-            EloRatingSystem.CalculateRating(winner, loser);
+            EloRatingSystem.CalculateRating(winner, loser, out delta);
 
             _playerService.UpdatePlayerAsync(winner);
             _playerService.UpdatePlayerAsync(loser);
-
-            if (winner.LookingForMatch)
-                Matchmaking.PlayersInLine.Add(winner);
-
-            if(loser.LookingForMatch)
-                Matchmaking.PlayersInLine.Add(loser);
         }
+
+        public void UpdateArenaTop(Player winner, Player loser, int delta)
+        {
+            var winnerItem = ArenaTop.LocalTopUsers.Where(p => p.Key.Id == winner.DiscordId).FirstOrDefault();
+            var loserItem = ArenaTop.LocalTopUsers.Where(p => p.Key.Id == loser.DiscordId).FirstOrDefault();
+
+            ArenaTop.LocalTopUsers[winnerItem.Key] = (winnerItem.Value.Item1 + delta, winner.Elo);
+            ArenaTop.LocalTopUsers[loserItem.Key] = (loserItem.Value.Item1 - delta, loser.Elo);
+        }
+
         private async Task CreateLog(Player winner, Player loser)
         {
-            ITextChannel? logChannel = await _guild.GetChannelAsync(BotSettings.LogChannel) as ITextChannel;
+            ITextChannel? logChannel = await _guild.GetChannelAsync(BotSettings.LogChannelId) as ITextChannel;
             
             IUser winnerUser = await _guild.GetUserAsync(winner.DiscordId);
             IUser loserUser = await _guild.GetUserAsync(loser.DiscordId);
@@ -141,11 +148,29 @@ namespace DiscordArenaBot.Arena
             if (logChannel is null || winnerUser is null || loserUser is null)
                 return;
 
-            string message = $"```diff\r\nGAME FINISHED\r\n\r\n" +
-                $"+ {EloRatingSystem.CalculateDelta(winner, loser)} To {winnerUser.Username}\r\n" +
-                $"- {EloRatingSystem.CalculateDelta(loser, winner)} From {loserUser.Username}\r\n```";
+            string message = $"```diff\r\n+ {EloRatingSystem.CalculateDelta(winner, loser)} To {winnerUser.Username}\r\n" +
+                $"- {EloRatingSystem.CalculateDelta(winner, loser)} From {loserUser.Username}\r\n```";
+
 
             await logChannel.SendMessageAsync(message);
+        }
+
+        private void ChangeLookingForMatchState(Player player1, Player player2)
+        {
+            var player1InLine = Matchmaking.PlayersInLine.Where(x => x.DiscordId == player1.DiscordId).FirstOrDefault();
+            var player2InLine = Matchmaking.PlayersInLine.Where(x => x.DiscordId == player2.DiscordId).FirstOrDefault();
+
+            if (player1InLine != null)
+            {
+                player1InLine.InMatch = false;
+                player1InLine.LastOponent = player2InLine;
+            }
+
+            if (player2InLine != null)
+            {
+                player2InLine.InMatch = false;
+                player2InLine.LastOponent = player1InLine;
+            }
         }
     }
 }

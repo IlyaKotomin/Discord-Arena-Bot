@@ -10,9 +10,9 @@ namespace DiscordArenaBot.Arena
 {
     public static class Matchmaking
     {
-        public static List<Player> PlayersInLine = new List<Player>();
-
         public static bool Started { get; private set; }
+
+        public static List<Player> PlayersInLine = new List<Player>();
 
         private static IDiscordClient? _client;
 
@@ -78,10 +78,8 @@ namespace DiscordArenaBot.Arena
                     continue;
 
                 Player player1 = GetRandomPlayer(PlayersInLine);
-                RemovePlayerFromList(player1, PlayersInLine);
 
                 Player player2 = GetRandomPlayer(PlayersInLine);
-                RemovePlayerFromList(player2, PlayersInLine);
 
                 if (player1 == null || player2 == null)
                     continue;
@@ -93,6 +91,14 @@ namespace DiscordArenaBot.Arena
                 if (player1.DiscordId == player2.DiscordId || player1 == player2)
                     continue;
 
+                if (player1.InMatch || player2.InMatch)
+                    continue;
+
+                if (!player1.LookingForMatch || !player2.LookingForMatch)
+                    continue;
+
+                player1.InMatch = true;
+                player2.InMatch = true;
                 new Thread(async () => await PlayersSelection(player1, player2)).Start();
             }
         }

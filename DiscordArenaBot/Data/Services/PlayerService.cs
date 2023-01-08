@@ -37,6 +37,6 @@ namespace DiscordArenaBot.Data.Services
         }
 
         public async Task<List<Player>> GetTopPlayers()
-            => await _context.Players.OrderBy(n => -n.Elo).ToListAsync();
+            => await _context.Players.OrderByDescending(n => n.Elo).ToListAsync();
     }
 }

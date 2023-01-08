@@ -13,11 +13,14 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		ESG Test|Any CPU = ESG Test|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{49C2214E-7293-4B2B-982A-637746B78A8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{49C2214E-7293-4B2B-982A-637746B78A8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49C2214E-7293-4B2B-982A-637746B78A8F}.ESG Test|Any CPU.ActiveCfg = ESG Test|Any CPU
+		{49C2214E-7293-4B2B-982A-637746B78A8F}.ESG Test|Any CPU.Build.0 = ESG Test|Any CPU
 		{49C2214E-7293-4B2B-982A-637746B78A8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49C2214E-7293-4B2B-982A-637746B78A8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection

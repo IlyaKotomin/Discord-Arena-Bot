@@ -2,12 +2,7 @@
 using DiscordArenaBot.Arena;
 using DiscordArenaBot.Arena.Models;
 using DiscordArenaBot.Data.Contexts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
+using DiscordArenaBot.Data.Services;
 
 namespace DiscordArenaBot.Bot
 {
@@ -182,11 +177,11 @@ namespace DiscordArenaBot.Bot
             return builder.Build();
         }
 
-        public static  async Task<Embed> StatsBuilder(IUser user, BotSocketInteractionContext context)
+        public static  async Task<Embed> StatsBuilder(IUser user)
         {
-            Player player = await context.PlayerService.GetPlayerByIdAsync(user.Id);
+            PlayerService playerService = new(new(new()));
 
-
+            Player player = await playerService.GetPlayerByIdAsync(user.Id);
 
             var authorBuilder = new EmbedAuthorBuilder();
             authorBuilder.WithIconUrl(user.GetAvatarUrl());
@@ -198,6 +193,13 @@ namespace DiscordArenaBot.Bot
             builder.AddField("Elo:", player.Elo, true);
             builder.AddField("Level:", player.Level, true);
             builder.AddField("Rank:", BotSettings.GetMedalEmote(player.Level), true);
+            builder.AddField("Total Games:", player.TotalGamesString, true);
+            builder.AddField("Wins:", player.Wins, true);
+            builder.AddField("Loses:", player.Loses, true);
+            builder.AddField("Max Win Streak:", player.MaxWinStreak, true);
+            builder.AddField("Max Lose Streak:", player.MaxLoseStreak, true);
+
+            builder.AddField("Last Games:", player.LastGamesMojies, false);
 
             builder.ThumbnailUrl = BotSettings.GetTrophyImgUrl(player.Level);
 
@@ -225,6 +227,13 @@ namespace DiscordArenaBot.Bot
             {
                 Name = $"2️⃣ Elo: {player2.Elo} (+{EloRatingSystem.CalculateDelta(player2, player1)}/-{EloRatingSystem.CalculateDelta(player1, player2)})",
                 Value = $"<@{player2.DiscordId}>",
+                IsInline = false
+            });
+
+            fields.Add(new EmbedFieldBuilder()
+            {
+                Name = $"🔁: press it if u want to skip this match!",
+                Value = $"(Draw)",
                 IsInline = false
             });
 
@@ -261,6 +270,15 @@ namespace DiscordArenaBot.Bot
 
             builder.Description = description;
             builder.Fields = fields;
+
+            return builder.Build();
+        }
+
+        public static Embed NotInArenaLine(Player player)
+        {
+            var builder = new EmbedBuilder();
+
+
 
             return builder.Build();
         }

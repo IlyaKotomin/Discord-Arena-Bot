@@ -4,12 +4,15 @@ namespace DiscordArenaBot.Arena
 {
     public class EloRatingSystem
     {
-        public static void CalculateRating(Player winner, Player loser)
+        public static void CalculateRating(Player winner, Player loser, out int deltaElo)
         {
-            int deltaElo = CalculateDelta(winner, loser);
+            deltaElo = CalculateDelta(winner, loser);
 
             winner.Elo += deltaElo;
             loser.Elo -= deltaElo;
+
+            winner.GamesString += 1;
+            loser.GamesString += 0;
         }
 
         public static int CalculateDelta(Player winner, Player loser)

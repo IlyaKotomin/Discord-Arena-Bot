@@ -16,7 +16,7 @@ namespace BroArenaBot
             if (await BotModuleExceptions.UserUnRegisteredState(user, Context))
                 return;
 
-            await RespondAsync(embed: await BotEmbeds.StatsBuilder(user, Context));
+            await RespondAsync(embed: await BotEmbeds.StatsBuilder(user));
         }
     }
 }

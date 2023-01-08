@@ -3,6 +3,7 @@ using DiscordArenaBot.Arena;
 using DiscordArenaBot.Arena.Models;
 using DiscordArenaBot.Bot.Modules.ModulesExceptions;
 using DiscordArenaBot.Data.Contexts;
+using DiscordArenaBot.Data.Services;
 using System.Numerics;
 
 namespace DiscordArenaBot.Bot.Modules.ArenaModules
@@ -12,16 +13,25 @@ namespace DiscordArenaBot.Bot.Modules.ArenaModules
         [SlashCommand("join", "Join to arena")]
         public async Task JoinArenaModule()
         {
+            if (await BotModuleExceptions.IsInArenaLine(Context))
+                return;
+
             if (!await BotModuleExceptions.AvailableJoinToArena(Context))
                 return;
 
             if (await BotModuleExceptions.UserUnRegisteredState(Context.User, Context))
                 return;
 
+            PlayerService playerService = new(new(new()));
 
+            var player = await playerService.GetPlayerByIdAsync(Context.User.Id);
 
-            Matchmaking.PlayersInLine.Add(await Context.PlayerService.GetPlayerByIdAsync(Context.User.Id));
+            ArenaTop.LocalTopUsers.Add(Context.User, (0, player.Elo));
 
+            player.LookingForMatch = true;
+
+            Matchmaking.PlayersInLine.Add(player);
+        
             await RespondAsync(embed: BotEmbeds.JoinedToArena(Context.User));
         }
 
@@ -31,7 +41,7 @@ namespace DiscordArenaBot.Bot.Modules.ArenaModules
             if (await BotModuleExceptions.UserUnRegisteredState(Context.User, Context))
                 return;
 
-            Player player = Matchmaking.GetPlayerFromLineById(Context.User.Id)!;
+            Player? player = Matchmaking.PlayersInLine.Where(p => p.DiscordId == Context.User.Id).FirstOrDefault();
 
             if (player != null)
             {
@@ -46,14 +56,6 @@ namespace DiscordArenaBot.Bot.Modules.ArenaModules
         public async Task StateModule()
         {
             await RespondAsync(Matchmaking.Started.ToString());
-        }
-
-        [SlashCommand("top", "Arena`s top")]
-        public async Task TopModule()
-        {
-            var players = await Context.PlayerService.GetTopPlayers();
-
-            await RespondAsync(embed: BotEmbeds.Top25PlayersBuilder(players, Context.Guild.IconUrl));
         }
     }
 }
